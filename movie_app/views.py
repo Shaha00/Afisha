@@ -5,6 +5,60 @@ from .serializers import DirectorSerializer, DirectorDetailSerializer, MovieDeta
     DirectorValidateSerializer, MovieValidateSerializer, ReviewValidateSerializer
 from .models import Director, Review, Movie
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.viewsets import ModelViewSet
+
+
+class DirectorListAPIView(ListCreateAPIView):
+    queryset = Director.objects.all()
+    serializer_class = DirectorSerializer
+    pagination_class = PageNumberPagination
+
+
+class DirectorDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Director.objects.all()
+    serializer_class = DirectorSerializer
+    lookup_field = 'id'
+
+
+class ReviewModelViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+    lookup_field = 'id'
+
+
+class MovieListCreateAPIView(ListCreateAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerialize
+
+    def create(self, request, *args, **kwargs):
+        serializer = DirectorValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={"errors": serializer.errors},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
+        name = serializer.validated_data.get('name')
+
+        director = Director.objects.create(name=name)
+        return Response(data=DirectorDetailSerializer(director).data,
+                        status=status.HTTP_201_CREATED)
+
+
+class MovieDetailListCreateAPIView(ListCreateAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieDetailSerialize
+
+    def create(self, request, *args, **kwargs):
+        serializer = DirectorValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={"errors": serializer.errors},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
+        name = serializer.validated_data.get('name')
+
+        director = Director.objects.create(name=name)
+        return Response(data=DirectorDetailSerializer(director).data,
+                        status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'POST', 'PUT'])
